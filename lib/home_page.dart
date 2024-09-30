@@ -33,7 +33,7 @@ class HomePage extends StatelessWidget {
               SliverToBoxAdapter(
                   child: _buildSummaryCards(totalIncome, totalExpenses)),
               SliverToBoxAdapter(child: _buildRecentTransactionsHeader()),
-              _buildTransactionsList(budgets),
+              _buildTransactionsList(context, budgets),
             ],
           ),
           floatingActionButton: FloatingActionButton(
@@ -145,29 +145,47 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildTransactionsList(List<Budget> budgets) {
+  Widget _buildTransactionsList(BuildContext context, List<Budget> budgets) {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (context, index) {
           final budget = budgets[index];
-          return Card(
-            margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: budget.isExpense ? expenseColor : incomeColor,
-                child: Icon(
-                  budget.isExpense ? Icons.remove : Icons.add,
-                  color: Colors.white,
+          return Dismissible(
+            key: Key(budget.name + budget.amount.toString()),
+            background: Container(
+              color: Colors.red,
+              alignment: Alignment.centerRight,
+              padding: EdgeInsets.only(right: 20.0),
+              child: Icon(Icons.delete, color: Colors.white),
+            ),
+            direction: DismissDirection.endToStart,
+            onDismissed: (direction) {
+              StoreProvider.of<AppState>(context)
+                  .dispatch(RemoveBudgetAction(budget));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('${budget.name} removed')),
+              );
+            },
+            child: Card(
+              margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: ListTile(
+                leading: CircleAvatar(
+                  backgroundColor:
+                      budget.isExpense ? expenseColor : incomeColor,
+                  child: Icon(
+                    budget.isExpense ? Icons.remove : Icons.add,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              title: Text(budget.name,
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text(budget.isExpense ? 'Expense' : 'Income'),
-              trailing: Text(
-                'Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '').format(budget.amount)}',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: budget.isExpense ? expenseColor : incomeColor,
+                title: Text(budget.name,
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text(budget.isExpense ? 'Expense' : 'Income'),
+                trailing: Text(
+                  'Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '').format(budget.amount)}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: budget.isExpense ? expenseColor : incomeColor,
+                  ),
                 ),
               ),
             ),
