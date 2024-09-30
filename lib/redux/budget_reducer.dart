@@ -3,11 +3,13 @@ import 'budget.dart';
 
 class RemoveBudgetAction {
   final Budget budget;
+
   RemoveBudgetAction(this.budget);
 }
 
 class AddBudgetAction {
   final Budget budget;
+
   AddBudgetAction(this.budget);
 }
 
@@ -18,9 +20,9 @@ AppState budgetReducer(AppState state, dynamic action) {
     );
   } else if (action is RemoveBudgetAction) {
     return AppState(
-      budgets:
-          state.budgets.where((budget) => budget != action.budget).toList(),
+      budgets: List.from(state.budgets)..remove(action.budget),
     );
   }
-  return state;
+
+  return state; // Kembalikan state jika tidak ada aksi yang cocok
 }
