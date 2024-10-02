@@ -6,6 +6,7 @@ import 'redux/budget.dart';
 import 'redux/budget_reducer.dart';
 
 class HomePage extends StatelessWidget {
+  // Warna-warna utama untuk desain UI
   final Color primaryColor = Color(0xFF5C6BC0);
   final Color accentColor = Color(0xFF3949AB);
   final Color incomeColor = Color(0xFF66BB6A);
@@ -14,14 +15,17 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Menggunakan StoreConnector untuk menghubungkan state budgets ke widget
     return StoreConnector<AppState, List<Budget>>(
-      converter: (store) => store.state.budgets,
+      converter: (store) =>
+          store.state.budgets, // Mengambil list budgets dari state
       builder: (context, budgets) {
+        // Menghitung total income dan total expenses
         double totalIncome = budgets
-            .where((b) => !b.isExpense)
+            .where((b) => !b.isExpense) // Hanya income
             .fold(0.0, (sum, b) => sum + b.amount);
         double totalExpenses = budgets
-            .where((b) => b.isExpense)
+            .where((b) => b.isExpense) // Hanya expenses
             .fold(0.0, (sum, b) => sum + b.amount);
         double total = totalIncome - totalExpenses;
 
@@ -29,15 +33,20 @@ class HomePage extends StatelessWidget {
           backgroundColor: backgroundColor,
           body: CustomScrollView(
             slivers: [
-              _buildAppBar(context, total),
+              _buildAppBar(
+                  context, total), // Membuat AppBar dengan total balance
               SliverToBoxAdapter(
-                  child: _buildSummaryCards(totalIncome, totalExpenses)),
-              SliverToBoxAdapter(child: _buildRecentTransactionsHeader()),
-              _buildTransactionsList(context, budgets),
+                  child: _buildSummaryCards(totalIncome,
+                      totalExpenses)), // Kartu summary income dan expenses
+              SliverToBoxAdapter(
+                  child:
+                      _buildRecentTransactionsHeader()), // Header recent transactions
+              _buildTransactionsList(context, budgets), // Daftar transaksi
             ],
           ),
           floatingActionButton: FloatingActionButton(
-            onPressed: () => _showAddBudgetDialog(context),
+            onPressed: () => _showAddBudgetDialog(
+                context), // Memunculkan dialog untuk menambah transaksi
             child: Icon(Icons.add),
             backgroundColor: accentColor,
           ),
@@ -48,6 +57,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  // Membuat AppBar dengan informasi total balance
   Widget _buildAppBar(BuildContext context, double total) {
     return SliverAppBar(
       expandedHeight: 200.0,
@@ -86,6 +96,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  // Membuat kartu ringkasan income dan expenses
   Widget _buildSummaryCards(double income, double expenses) {
     return Padding(
       padding: EdgeInsets.all(16),
@@ -103,6 +114,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  // Membuat kartu ringkasan individual
   Widget _buildSummaryCard(
       String title, double amount, Color color, IconData icon) {
     return Card(
@@ -134,6 +146,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  // Membuat header untuk daftar transaksi terbaru
   Widget _buildRecentTransactionsHeader() {
     return Padding(
       padding: EdgeInsets.all(16),
@@ -145,6 +158,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  // Membuat daftar transaksi yang bisa dihapus dengan geser (swipe)
   Widget _buildTransactionsList(BuildContext context, List<Budget> budgets) {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
@@ -160,8 +174,8 @@ class HomePage extends StatelessWidget {
             ),
             direction: DismissDirection.endToStart,
             onDismissed: (direction) {
-              StoreProvider.of<AppState>(context)
-                  .dispatch(RemoveBudgetAction(budget));
+              StoreProvider.of<AppState>(context).dispatch(
+                  RemoveBudgetAction(budget)); // Menghapus budget dari state
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('${budget.name} removed')),
               );
@@ -196,6 +210,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  // Menampilkan dialog untuk menambahkan budget
   void _showAddBudgetDialog(BuildContext context) {
     String name = '';
     String amount = '';
@@ -217,7 +232,8 @@ class HomePage extends StatelessWidget {
                         labelText: 'Name',
                         border: OutlineInputBorder(),
                       ),
-                      onChanged: (value) => name = value,
+                      onChanged: (value) =>
+                          name = value, // Menangkap input name
                     ),
                     SizedBox(height: 16),
                     TextField(
@@ -226,7 +242,8 @@ class HomePage extends StatelessWidget {
                         border: OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.number,
-                      onChanged: (value) => amount = value,
+                      onChanged: (value) =>
+                          amount = value, // Menangkap input amount
                     ),
                     SizedBox(height: 16),
                     SwitchListTile(
@@ -234,7 +251,8 @@ class HomePage extends StatelessWidget {
                       value: isExpense,
                       onChanged: (value) {
                         setState(() {
-                          isExpense = value;
+                          isExpense =
+                              value; // Menentukan apakah transaksi expense atau income
                         });
                       },
                       activeColor: accentColor,
@@ -245,7 +263,7 @@ class HomePage extends StatelessWidget {
               actions: [
                 TextButton(
                   child: Text('Cancel'),
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () => Navigator.of(context).pop(), // Tutup dialog
                 ),
                 ElevatedButton(
                   child: Text('Add'),
@@ -256,10 +274,10 @@ class HomePage extends StatelessWidget {
                   onPressed: () {
                     if (name.isNotEmpty && amount.isNotEmpty) {
                       final budget = Budget(name, double.parse(amount),
-                          isExpense: isExpense);
-                      StoreProvider.of<AppState>(context)
-                          .dispatch(AddBudgetAction(budget));
-                      Navigator.of(context).pop();
+                          isExpense: isExpense); // Membuat objek Budget baru
+                      StoreProvider.of<AppState>(context).dispatch(
+                          AddBudgetAction(budget)); // Menambah budget ke state
+                      Navigator.of(context).pop(); // Tutup dialog
                     }
                   },
                 ),
